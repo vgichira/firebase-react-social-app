@@ -57,30 +57,32 @@ app.get("/screams", async (req, res) => {
     }
 })
 
-app.post("/scream/new", (req, res)=>{
-    const newScream = {
-        body:req.body.body,
-        userHandle: req.body.userHandle,
-        createdAt: new Date().toISOString()
-    }
+app.post("/scream/new", async (req, res) => {
+    const body = req.body.body;
+    const userHandle = req.body.userHandle;
 
-    db
-    .collection("screams")
-    .add(newScream)
-    .then(doc => {
-        res.json({
-            status: 200,
-            message: `New document ${doc.id} created successfully`
+    try{
+        const newScream = {
+            body,
+            userHandle,
+            createdAt: new Date().toISOString()
+        }
+    
+        const response = await db.collection("screams").add(newScream)
+        
+        res.status(201).json({
+            status:201,
+            message:`New document ${response.id} created successfully`
         })
-    })
-    .catch(error=>{
+    }
+    catch(error) {
         res.status(500).json({
             status:500,
             message: "Oops! An error occurred while processing request."
         })
 
         console.error(error)
-    })
+    }
 })
 
 // firebase signup route
