@@ -29,16 +29,14 @@ firebase.initializeApp(configs);
 
 // get the screams from screams collection
 
-app.get("/screams", (req, res) => {
-    db
-    .collection("screams")
-    .orderBy("createdAt", "desc")
-    .get()
-    .then(docs => {
-        let screams = [];
+app.get("/screams", async (req, res) => {
+    try{
+        let data = [];
+
+        const docs = await db.collection("screams").orderBy("createdAt", "desc").get()
 
         docs.forEach(doc => {
-            screams.push({
+            data.push({
                 screamId:doc.id,
                 body:doc.data().body,
                 userHandle:doc.data().userHandle,
@@ -46,14 +44,17 @@ app.get("/screams", (req, res) => {
             })
         })
 
-        res.json({
-            status: 200,
-            data:screams
-        });
-    })
-    .catch(error => {
-        console.error(error)
-    });
+        res.status(200).json({
+            status:200,
+            data
+        })
+    }
+    catch(error){
+        res.status(500).json({
+            status:500,
+            message:error
+        })
+    }
 })
 
 app.post("/scream/new", (req, res)=>{
