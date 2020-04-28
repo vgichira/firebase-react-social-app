@@ -33,14 +33,14 @@ app.get("/screams", async (req, res) => {
     try{
         let data = [];
 
-        const docs = await db.collection("screams").orderBy("createdAt", "desc").get()
+        const screams = await db.collection("screams").orderBy("createdAt", "desc").get()
 
-        docs.forEach(doc => {
-            data.push({
-                screamId:doc.id,
-                body:doc.data().body,
-                userHandle:doc.data().userHandle,
-                createdAt:doc.data().createdAt
+        screams.forEach(scream => {
+            return data.push({
+                screamId:scream.id,
+                body:scream.data().body,
+                userHandle:scream.data().userHandle,
+                createdAt:scream.data().createdAt
             })
         })
 
@@ -50,6 +50,7 @@ app.get("/screams", async (req, res) => {
         })
     }
     catch(error){
+        console.error(error)
         res.status(500).json({
             status:500,
             message:error
@@ -62,6 +63,7 @@ app.post("/scream/new", async (req, res) => {
     const userHandle = req.body.userHandle;
 
     try{
+
         const newScream = {
             body,
             userHandle,
@@ -85,6 +87,14 @@ app.post("/scream/new", async (req, res) => {
     }
 })
 
+// check if the email is valid
+
+const isValidEmail = (email) => {
+    const emailRegEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    if(email.match(emailRegEx)) return true;
+}
+
 // firebase signup route
 
 app.post("/signup", (req, res) => {
@@ -97,7 +107,28 @@ app.post("/signup", (req, res) => {
         handle:req.body.handle
     }
 
-    // TODO validation
+    // check if the email has been provided
+    let errors = {};
+
+    if(!newUser.email){
+        errors.email = "Email address is required";
+    } else if(!isValidEmail(newUser.email)){
+        errors.email = "Please enter a valid email";
+    }
+
+    // validate handle
+
+    if(!newUser.handle) errors.handle = "User handle is required";
+
+    // validate password
+
+    if(!newUser.password) errors.password = "Password is required.";
+
+    // check if both password and confirm password match
+
+    if(newUser.password !== newUser.confirmPassword) errors.confirmPassword = "Passwords do not match";
+
+    if(Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     db.doc(`/users/${newUser.handle}`)
     .get()
