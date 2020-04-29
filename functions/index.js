@@ -15,23 +15,56 @@ admin.initializeApp({
 const db = admin.firestore()
 
 const configs = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.AUTH_DOMAIN,
-    databaseURL: process.env.DATABASE_URL,
-    projectId: process.env.PROJECT_ID,
-    storageBucket: process.env.STORAGE_BUCKET,
-    messagingSenderId: process.env.MESSAGING_SENDER_ID,
-    appId: process.env.APP_ID,
-    measurementId: process.env.MEASUREMENT_ID
+    apiKey: process.env.FIREBASE_API_KEY, 
+    authDomain: process.env.AUTH_DOMAIN, 
+    databaseURL: process.env.DATABASE_URL, 
+    projectId: process.env.PROJECT_ID, 
+    storageBucket: process.env.STORAGE_BUCKET, 
+    messagingSenderId: process.env.MESSAGING_SENDER_ID, 
+    appId: process.env.APP_ID, 
+    measurementId: process.env.MEASUREMENT_ID, 
 };
 
 // initialize firebase
 
 firebase.initializeApp(configs);
 
+// firebase auth middleware. 
+// Checks if the request is authorized. 
+
+const firebaseAuth = async (req, res, next) => {
+    if(!req.headers.authorization || !req.headers.authorization.startsWith("Bearer ")){
+        return res.status(401).json({
+            status:401,
+            message: "Unauthorized"
+        })
+    }
+
+    try{
+        const idToken = req.headers.authorization.split("Bearer ")[1];
+
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+        req.user = decodedToken;
+
+        const data = await db.collection("users")
+        .where("userId", "==", req.user.uid)
+        .limit(1)
+        .get();
+
+        req.user.handle = data.docs[0].data().handle
+
+        return next();
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json(error);
+    }
+}
+
 // get the screams from screams collection
 
-app.get("/screams", async (req, res) => {
+app.get("/screams", firebaseAuth, async (req, res) => {
     try{
         let data = [];
 
@@ -60,9 +93,9 @@ app.get("/screams", async (req, res) => {
     }
 })
 
-app.post("/scream/new", async (req, res) => {
+app.post("/scream/new", firebaseAuth, async (req, res) => {
     const body = req.body.body;
-    const userHandle = req.body.userHandle;
+    const userHandle = req.user.handle;
 
     try{
 
