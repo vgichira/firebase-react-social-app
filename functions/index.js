@@ -1,26 +1,26 @@
 const functions = require('firebase-functions');
 const admin     = require("firebase-admin");
-const serviceAccount = require("./serviceKey.json");
 const firebase = require("firebase");
 const express = require("express");
+const serviceAccount = require("./serviceKey.json");
 const app = express();
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://socialape-8c7de.firebaseio.com"
+    databaseURL: process.env.DATABASE_URL
 });
 
 const db = admin.firestore()
 
 const configs = {
-    apiKey: "AIzaSyBOKGoTbv-qUn8uzgCFyfiEYdpZ_cVCQfA",
-    authDomain: "socialape-8c7de.firebaseapp.com",
-    databaseURL: "https://socialape-8c7de.firebaseio.com",
-    projectId: "socialape-8c7de",
-    storageBucket: "socialape-8c7de.appspot.com",
-    messagingSenderId: "380051644460",
-    appId: "1:380051644460:web:04b7a005fd9d4846f4b189",
-    measurementId: "G-212W7HYVXP"
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.AUTH_DOMAIN,
+    databaseURL: process.env.DATABASE_URL,
+    projectId: process.env.PROJECT_ID,
+    storageBucket: process.env.STORAGE_BUCKET,
+    messagingSenderId: process.env.MESSAGING_SENDER_ID,
+    appId: process.env.APP_ID,
+    measurementId: process.env.MEASUREMENT_ID
 };
 
 // initialize firebase
