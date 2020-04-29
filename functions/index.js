@@ -3,6 +3,8 @@ const admin     = require("firebase-admin");
 const firebase = require("firebase");
 const express = require("express");
 const serviceAccount = require("./serviceKey.json");
+require("dotenv").config();
+
 const app = express();
 
 admin.initializeApp({
@@ -97,7 +99,7 @@ const isValidEmail = (email) => {
 
 // firebase signup route
 
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
     let token, userId;
 
     const newUser = {
@@ -182,6 +184,48 @@ app.post("/signup", (req, res) => {
             })
         }
     })
+})
+
+// create the login route
+
+app.post("/login", async (req, res) => {
+    const email = req.body.email
+    const password = req.body.password
+
+    let errors = {};
+
+    //email validation
+
+    if(!email) errors.email = "Email is required";
+
+    // password validation
+
+    if(!password) errors.password = "Password is required"
+
+    // check if there were errors
+
+    if(Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+    try{
+        const response = await firebase.auth().signInWithEmailAndPassword(email, password);
+
+        const token = await response.user.getIdToken();
+
+        return res.status(200).json({token})
+    }
+    catch(error){
+        console.error(error)
+
+        if(error.code === "auth/wrong-password"){
+            return res.status(200).json({
+                general:"Incorrect email or password."
+            })
+        }
+
+        return res.status(500).json({
+            error:error.code
+        })
+    }
 })
 
 exports.api = functions.https.onRequest(app)
