@@ -6,28 +6,28 @@ const isValidEmail = (email) => {
     if(email.match(emailRegEx)) return true;
 }
 
-exports.validateSignupData = (data)=>{
+exports.validateSignupData = ({ email, handle, password, confirmPassword })=>{
     // check if the email has been provided
     
     let errors = {};
 
-    if(!data.email){
+    if(!email){
         errors.email = "Email address is required";
-    } else if(!isValidEmail(data.email)){
+    } else if(!isValidEmail(email)){
         errors.email = "Please enter a valid email";
     }
 
     // validate handle
 
-    if(!data.handle) errors.handle = "User handle is required";
+    if(!handle) errors.handle = "User handle is required";
 
     // validate password
 
-    if(!data.password) errors.password = "Password is required.";
+    if(!password) errors.password = "Password is required.";
 
     // check if both password and confirm password match
 
-    if(data.password !== data.confirmPassword) errors.confirmPassword = "Passwords do not match";
+    if(password !== confirmPassword) errors.confirmPassword = "Passwords do not match";
 
     return {
         errors,
@@ -35,16 +35,16 @@ exports.validateSignupData = (data)=>{
     }
 }
 
-exports.validateLoginData = (data) => {
+exports.validateLoginData = ({ email, password }) => {
     let errors = {};
 
     //email validation
 
-    if(!data.email) errors.email = "Email is required";
+    if(!email) errors.email = "Email is required";
 
     // password validation
 
-    if(!data.password) errors.password = "Password is required"
+    if(!password) errors.password = "Password is required"
 
     return {
         errors,
