@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const express = require("express");
 const { getScreams, newScream } = require("./handlers/screams");
-const { signupUser, loginUser, uploadImage, addUserDetails } = require("./handlers/users");
+const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
 
 const app = express();
@@ -19,5 +19,7 @@ app.post("/login", loginUser)
 app.post("/user/image", firebaseAuth , uploadImage)
 // add user details
 app.post("/user", firebaseAuth, addUserDetails)
+// get authenticated user data
+app.get("/user", firebaseAuth, getAuthenticatedUser)
 
 exports.api = functions.https.onRequest(app)

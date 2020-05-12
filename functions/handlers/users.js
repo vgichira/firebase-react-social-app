@@ -131,6 +131,33 @@ exports.addUserDetails = (req, res)=>{
     })
 }
 
+// get authenticated user data
+exports.getAuthenticatedUser = async (req, res) => {
+    let userData = {};
+
+    try{
+        const doc = await db.doc(`/users/${req.user.handle}`).get();
+
+        if(doc.exists){
+            userData.credentials = doc.data();
+        }
+
+        const likes = await db.collection("likes").where("userHandle", "==", req.user.handle).get();
+
+        userData.likes = [];
+
+        likes.forEach(like => {
+            userData.likes.push(like)
+        })
+    
+        return res.status(200).json(userData);
+    }
+    catch(err){
+        console.error(err);
+        return res.status(500).json({error: err.code})
+    }
+}
+
 // upload user image
 exports.uploadImage = (req, res) => {
     const busboy = new Busboy({headers: req.headers})
