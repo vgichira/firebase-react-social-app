@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
 const express = require("express");
-const { getScreams, newScream } = require("./handlers/screams");
+const { getScreams, newScream, getScream } = require("./handlers/screams");
 const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
 
@@ -10,6 +10,8 @@ const app = express();
 app.get("/screams", firebaseAuth, getScreams)
 // create a new scream
 app.post("/scream/new", firebaseAuth, newScream)
+// get one scream
+app.get("/scream/:screamID", getScream)
 
 // firebase signup route
 app.post("/signup", signupUser)

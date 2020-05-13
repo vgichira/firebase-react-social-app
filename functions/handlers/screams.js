@@ -38,7 +38,6 @@ exports.newScream = async (req, res) => {
     const userHandle = req.user.handle;
 
     try{
-
         const newScream = {
             body,
             userHandle,
@@ -59,5 +58,40 @@ exports.newScream = async (req, res) => {
         })
 
         console.error(error)
+    }
+}
+
+// get one scream with the scream ID
+
+exports.getScream = async (req, res) => {
+    try{
+        let screamData = {};
+
+        const screamID = req.params.screamID
+        const scream = await db.doc(`/screams/${screamID}`).get();
+    
+        if(!scream.exists){
+            return res.status(404).json({error: "Resource not found"})
+        }
+    
+        screamData = scream.data();
+        screamData.id = screamID;
+    
+        const screamComments = await db.collection("comments")
+        .orderBy("createdAt", "desc")
+        .where("screamID", "==", screamID)
+        .get();
+        
+        screamData.comments = [];
+    
+        screamComments.forEach(comment => {
+            screamData.comments.push(comment.data())
+        })
+    
+        return res.status(200).json({screamData});
+    }
+    catch(err){
+        console.error(err);
+        return res.status(500).json({error: err.code});
     }
 }
