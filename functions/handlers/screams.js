@@ -36,19 +36,25 @@ exports.getScreams = async (req, res) => {
 exports.newScream = async (req, res) => {
     const body = req.body.body;
     const userHandle = req.user.handle;
+    const imageUrl = req.user.imageUrl;
 
     try{
         const newScream = {
-            body,
-            userHandle,
-            createdAt: new Date().toISOString()
+            body, 
+            userHandle, 
+            imageUrl, 
+            likeCount: 0, 
+            commentCount: 0, 
+            createdAt: new Date().toISOString(), 
         }
-    
+
         const response = await db.collection("screams").add(newScream)
-        
+
+        newScream.id = response.id
+
         res.status(201).json({
-            status:201,
-            message:`New document ${response.id} created successfully`
+            status:201, 
+            scream:newScream
         })
     }
     catch(error) {
@@ -56,7 +62,6 @@ exports.newScream = async (req, res) => {
             status:500,
             message: "Oops! An error occurred while processing request."
         })
-
         console.error(error)
     }
 }
@@ -136,4 +141,56 @@ exports.commentScream = async (req, res) => {
         return res.status(500).json({error: err.code});
     }
 
+}
+
+// like a scream
+
+exports.likeScream = async (req, res) => {
+    try{
+        const userHandle = req.user.handle;
+        const screamID = req.params.screamID;
+    
+        const likeDocument = db.collection("likes").where("userHandle", "==", userHandle)
+        .where("screamID", "==", screamID).limit(1);
+    
+        const screamDocument = db.doc(`/screams/${screamID}`);
+    
+        let screamData;
+    
+        // check if the scream exists
+
+        const scream = await screamDocument.get();
+    
+        if(!scream.exists){
+            return res.status(404).json({
+                status: 404, 
+                message:"Resource not found"
+            })
+        }
+
+        screamData = scream.data();
+        screamData.id = scream.id;
+
+        const like = await likeDocument.get()
+
+        if(like.empty){
+            db.collection("likes").add({
+                createdAt: new Date().toISOString(),
+                userHandle: req.user.handle,
+                screamID
+            })
+
+            const likesCount = screamData.likeCount++;
+
+            screamDocument.update({ likesCount });
+
+            return res.status(200).json({screamData});
+        }else{
+            return res.status(404).json({ error: "Scream already liked" })
+        }
+    }
+    catch(err){
+        console.error(err);
+        return res.status(500).json({error: err.code})
+    }
 }
