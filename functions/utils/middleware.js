@@ -21,6 +21,7 @@ module.exports = async (req, res, next) => {
         .get();
 
         req.user.handle = data.docs[0].data().handle
+        req.user.imageUrl = data.docs[0].data().imageUrl
 
         return next();
     }

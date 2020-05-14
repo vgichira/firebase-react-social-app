@@ -95,3 +95,45 @@ exports.getScream = async (req, res) => {
         return res.status(500).json({error: err.code});
     }
 }
+
+// comment on a scream
+
+exports.commentScream = async (req, res) => {
+    try{
+        const screamID = req.params.screamID;
+
+        const newComment = {
+            screamID, 
+            userHandle: req.user.handle, 
+            userImage: req.user.imageUrl,
+            body: req.body.comment, 
+            createdAt: new Date().toISOString(),
+        }
+    
+        if(!newComment.body){
+            return res.status(400).json({error: "Comment is required"});
+        }
+
+        // check if the scream exists
+
+        const scream = await db.doc(`/screams/${screamID}`).get()
+
+        if(!scream.exists){
+            return res.status(404).json({error:"Scream does not exist"})
+        }
+    
+        // add the comment
+
+        const response = await db.collection("comments").add(newComment);
+
+        return res.status(201).json({
+            status: 201, 
+            comment:newComment 
+        })
+    }
+    catch(err){
+        console.error(err);
+        return res.status(500).json({error: err.code});
+    }
+
+}
