@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
 const express = require("express");
-const { getScreams, newScream, getScream, commentScream, likeScream, unlikeScream } = require("./handlers/screams");
+const { getScreams, newScream, getScream, commentScream, likeScream, unlikeScream, deleteScream } = require("./handlers/screams");
 const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
 
@@ -20,6 +20,9 @@ app.post("/scream/:screamID/comment", firebaseAuth, commentScream)
 app.get("/scream/:screamID/like", firebaseAuth, likeScream)
 // unlike a scream
 app.get("/scream/:screamID/unlike", firebaseAuth, unlikeScream)
+
+// delete a scream
+app.delete("/scream/:screamID", firebaseAuth, deleteScream);
 
 // firebase signup route
 app.post("/signup", signupUser)

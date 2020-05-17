@@ -131,6 +131,10 @@ exports.commentScream = async (req, res) => {
 
         const response = await db.collection("comments").add(newComment);
 
+        // update the comment count of the scream
+
+        await scream.ref.update({ commentCount: scream.data().commentCount + 1 })
+
         return res.status(201).json({
             status: 201, 
             comment:newComment 
@@ -242,5 +246,43 @@ exports.unlikeScream = async (req, res) => {
     catch(err){
         console.error(err);
         return res.status(500).json({error: err.code})
+    }
+}
+
+// delete a scream
+
+exports.deleteScream = async (req, res) => {
+    const screamID = req.params.screamID;
+
+    if(!screamID){
+        return res.status(400).json({ error: "Scream ID is required" });
+    }
+
+    try{
+        const document = db.doc(`/screams/${screamID}`);
+
+        const scream = await document.get()
+
+        // check if the scream exists
+
+        if(!scream.exists){
+            return res.status(404).json({ error: "Scream does not exist" });
+        }
+
+        // check if the person deleting the scream is the owner
+
+        if(scream.data().userHandle !== req.user.handle){
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        // delete the scream
+
+        await document.delete()
+
+        return res.status(200).json({ message: "Scream deleted successfully" });
+    }
+    catch(err){
+        console.error(err);
+        return res.status(500).json({ error: err.code });
     }
 }
