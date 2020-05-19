@@ -186,7 +186,7 @@ exports.likeScream = async (req, res) => {
 
             screamData.likeCount++;
 
-            screamDocument.update({ likeCount:screamData.likeCount });
+            screamDocument.update({ likeCount: screamData.likeCount });
 
             return res.status(200).json({screamData});
         }else{

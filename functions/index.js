@@ -3,6 +3,7 @@ const express = require("express");
 const { getScreams, newScream, getScream, commentScream, likeScream, unlikeScream, deleteScream } = require("./handlers/screams");
 const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
+const { db } = require("./utils/admin");
 
 const app = express();
 
@@ -36,3 +37,68 @@ app.post("/user", firebaseAuth, addUserDetails)
 app.get("/user", firebaseAuth, getAuthenticatedUser)
 
 exports.api = functions.https.onRequest(app)
+
+// create a notification after liking a scream
+exports.createNotificationOnLike = functions.firestore.document("likes/{id}").onCreate(async (snapshot) => {
+    try{
+        const scream = await db.doc(`/screams/${snapshot.data().screamID}`).get()
+
+        // check if the scream exists
+    
+        if(scream.exists){
+            await db.doc(`/notifications/${snapshot.id}`).set({
+                recipient: scream.data().userHandle,
+                sender: snapshot.data().userHandle,
+                read: false,
+                screamID: scream.id,
+                type: "like",
+                createdAt: new Date().toISOString()
+            })
+
+            return;
+        }
+    }
+    catch(err){
+        console.error(err);
+        return;
+    }
+
+})
+
+// delete notification after unliking a scream
+exports.deleteNotificationOnUnlike = functions.firestore.document("likes/{id}").onDelete(snapshot => {
+    try{
+        db.doc(`/notifications/${snapshot.id}`).delete();
+        return;
+    }
+    catch(err){
+        console.error(err);
+        return;
+    }
+})
+
+// create a notification after commenting on a scream
+exports.createNotificationOnComment = functions.firestore.document("comments/{id}").onCreate(snapshot => {
+    try{
+        const scream = db.doc(`/screams/${snapshot.data().screamID}`).get();
+
+        // check if the scream exists
+    
+        if(scream.exists){
+            db.doc(`/notifications/${snapshot.id}`).set({
+                recipient: scream.data().userHandle,
+                sender: snapshot.data().userHandle,
+                read: false,
+                screamID: scream.id,
+                type: "comment",
+                createdAt: new Date().toISOString()
+            })
+        }
+    
+        return
+    }
+    catch(err){
+        console.error(err);
+        return
+    }
+})
