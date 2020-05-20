@@ -225,7 +225,7 @@ exports.uploadImage = (req, res) => {
 // get any user details
 exports.getUserDetails = async (req, res) => {
     const userHandle = req.params.handle;
-
+    let userData = {};
     try {
         const userDetails = await db.doc(`/users/${userHandle}`).get()
 
@@ -238,7 +238,29 @@ exports.getUserDetails = async (req, res) => {
             })
         }
 
-        return res.status(200).json(userDetails.data());
+        userData.user = userDetails.data();
+
+        // get the user's screams
+
+        const screams = await db.collection("screams").where("userHandle", "==", userHandle).orderBy("createdAt", "desc").get();
+
+        userData.userScreams = [];
+
+        screams.forEach(scream => {
+            const screamData = scream.data();
+
+            userData.userScreams.push({
+                body: screamData.body, 
+                imageUrl: screamData.imageUrl, 
+                userHandle: screamData.userHandle, 
+                commentCount: screamData.commentCount, 
+                likeCount: screamData.likeCount,
+                screamID: scream.id, 
+                createdAt: screamData.createdAt, 
+            })
+        })
+
+        return res.status(200).json(userData);
     } catch (error) {
         console.error(error);
         return res.status(500).json({error: error.code});
