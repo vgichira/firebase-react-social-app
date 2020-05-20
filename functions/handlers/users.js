@@ -147,7 +147,26 @@ exports.getAuthenticatedUser = async (req, res) => {
         userData.likes = [];
 
         likes.forEach(like => {
-            userData.likes.push(like)
+            userData.likes.push(like.data())
+        })
+
+        const userNotifs = await db.collection("notifications")
+        .where("recipient", "==", req.user.handle).orderBy("createdAt", "desc").limit(10).get();
+
+        userData.notifications = [];
+
+        userNotifs.forEach(notif => {
+            const notifData = notif.data();
+
+            userData.notifications.push({
+                recipient:notifData.recipient, 
+                sender: notifData.sender, 
+                createdAt: notifData.createdAt, 
+                screamID: notifData.screamID, 
+                type: notifData.type, 
+                read: notifData.read, 
+                notificationID: notif.id 
+            })
         })
     
         return res.status(200).json(userData);

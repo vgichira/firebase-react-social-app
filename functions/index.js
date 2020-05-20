@@ -41,7 +41,7 @@ exports.api = functions.https.onRequest(app)
 // create a notification after liking a scream
 exports.createNotificationOnLike = functions.firestore.document("likes/{id}").onCreate(async (snapshot) => {
     try{
-        const scream = await db.doc(`/screams/${snapshot.data().screamID}`).get()
+        const scream = await db.doc(`/screams/${snapshot.data().screamID}`).get();
 
         // check if the scream exists
     
@@ -54,7 +54,6 @@ exports.createNotificationOnLike = functions.firestore.document("likes/{id}").on
                 type: "like",
                 createdAt: new Date().toISOString()
             })
-
             return;
         }
     }
@@ -62,7 +61,6 @@ exports.createNotificationOnLike = functions.firestore.document("likes/{id}").on
         console.error(err);
         return;
     }
-
 })
 
 // delete notification after unliking a scream
@@ -78,14 +76,14 @@ exports.deleteNotificationOnUnlike = functions.firestore.document("likes/{id}").
 })
 
 // create a notification after commenting on a scream
-exports.createNotificationOnComment = functions.firestore.document("comments/{id}").onCreate(snapshot => {
+exports.createNotificationOnComment = functions.firestore.document("comments/{id}").onCreate(async (snapshot) => {
     try{
-        const scream = db.doc(`/screams/${snapshot.data().screamID}`).get();
+        const scream = await db.doc(`/screams/${snapshot.data().screamID}`).get();
 
         // check if the scream exists
     
         if(scream.exists){
-            db.doc(`/notifications/${snapshot.id}`).set({
+            await db.doc(`/notifications/${snapshot.id}`).set({
                 recipient: scream.data().userHandle,
                 sender: snapshot.data().userHandle,
                 read: false,
@@ -93,9 +91,8 @@ exports.createNotificationOnComment = functions.firestore.document("comments/{id
                 type: "comment",
                 createdAt: new Date().toISOString()
             })
+            return
         }
-    
-        return
     }
     catch(err){
         console.error(err);
