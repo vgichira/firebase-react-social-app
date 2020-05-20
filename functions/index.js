@@ -9,7 +9,7 @@ const { markNotificationRead } = require("./handlers/notifications");
 const app = express();
 
 // get the screams from screams collection
-app.get("/screams", firebaseAuth, getScreams)
+app.get("/screams", getScreams)
 // create a new scream
 app.post("/scream/new", firebaseAuth, newScream)
 // get one scream
