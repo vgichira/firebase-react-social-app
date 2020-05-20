@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const express = require("express");
 const { getScreams, newScream, getScream, commentScream, likeScream, unlikeScream, deleteScream } = require("./handlers/screams");
-const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser } = require("./handlers/users");
+const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser, getUserDetails } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
 const { db } = require("./utils/admin");
 
@@ -35,6 +35,8 @@ app.post("/user/image", firebaseAuth , uploadImage)
 app.post("/user", firebaseAuth, addUserDetails)
 // get authenticated user data
 app.get("/user", firebaseAuth, getAuthenticatedUser)
+// get any user details
+app.get("/user/:handle/details", getUserDetails)
 
 exports.api = functions.https.onRequest(app)
 

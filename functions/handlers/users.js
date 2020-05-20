@@ -221,3 +221,28 @@ exports.uploadImage = (req, res) => {
     })
     busboy.end(req.rawBody);
 }
+
+// get any user details
+exports.getUserDetails = async (req, res) => {
+    const userHandle = req.params.handle;
+
+    try {
+        const userDetails = await db.doc(`/users/${userHandle}`).get()
+
+        // check if the user exists
+
+        if (!userDetails.exists){
+            return res.status(404).json({
+                status:404,
+                message: "Resource not found"
+            })
+        }
+
+        return res.status(200).json(userDetails.data());
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({error: error.code});
+    }
+
+
+}
