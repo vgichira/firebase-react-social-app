@@ -4,6 +4,7 @@ const { getScreams, newScream, getScream, commentScream, likeScream, unlikeScrea
 const { signupUser, loginUser, uploadImage, addUserDetails, getAuthenticatedUser, getUserDetails } = require("./handlers/users");
 const firebaseAuth = require("./utils/middleware");
 const { db } = require("./utils/admin");
+const { markNotificationRead } = require("./handlers/notifications");
 
 const app = express();
 
@@ -37,6 +38,8 @@ app.post("/user", firebaseAuth, addUserDetails)
 app.get("/user", firebaseAuth, getAuthenticatedUser)
 // get any user details
 app.get("/user/:handle/details", getUserDetails)
+// mark notification as read
+app.post("/notifications/read", firebaseAuth, markNotificationRead)
 
 exports.api = functions.https.onRequest(app)
 

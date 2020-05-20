@@ -225,6 +225,14 @@ exports.uploadImage = (req, res) => {
 // get any user details
 exports.getUserDetails = async (req, res) => {
     const userHandle = req.params.handle;
+
+    if(!userHandle){
+        return res.status(400).json({
+            status:400,
+            message:"User handle is required"
+        })
+    }
+
     let userData = {};
     try {
         const userDetails = await db.doc(`/users/${userHandle}`).get()
@@ -268,3 +276,5 @@ exports.getUserDetails = async (req, res) => {
 
 
 }
+
+// mark 
