@@ -74,8 +74,8 @@ exports.signupUser = async (req, res) => {
             })
         }else{
             return res.status(500).json({
-                status:500,
-                message:"An error occurred while processing request."
+                status:500, 
+                general:"An error occurred while processing request." 
             })
         }
     })
@@ -276,5 +276,3 @@ exports.getUserDetails = async (req, res) => {
 
 
 }
-
-// mark 

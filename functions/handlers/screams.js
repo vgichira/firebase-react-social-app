@@ -10,10 +10,13 @@ exports.getScreams = async (req, res) => {
 
         screams.forEach(scream => {
             return data.push({
-                screamId:scream.id,
-                body:scream.data().body,
-                userHandle:scream.data().userHandle,
-                createdAt:scream.data().createdAt
+                screamId: scream.id, 
+                body: scream.data().body, 
+                userHandle: scream.data().userHandle, 
+                createdAt: scream.data().createdAt, 
+                commentCount: scream.data().commentCount, 
+                likeCount: scream.data().likeCount, 
+                imageUrl: scream.data().imageUrl 
             })
         })
 
@@ -115,7 +118,7 @@ exports.commentScream = async (req, res) => {
     }
 
     if(!newComment.body){
-        return res.status(400).json({error: "Comment is required"});
+        return res.status(400).json({comment: "Comment is required"});
     }
 
     // check if the scream exists

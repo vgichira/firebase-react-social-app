@@ -50,7 +50,7 @@ exports.createNotificationOnLike = functions.firestore.document("likes/{id}").on
 
         // check if the scream exists
     
-        if(scream.exists){
+        if(scream.exists && scream.data().userHandle !== snapshot.data().userHandle){
             await db.doc(`/notifications/${snapshot.id}`).set({
                 recipient: scream.data().userHandle,
                 sender: snapshot.data().userHandle,
@@ -87,7 +87,7 @@ exports.createNotificationOnComment = functions.firestore.document("comments/{id
 
         // check if the scream exists
     
-        if(scream.exists){
+        if(scream.exists && scream.data().userHandle !== snapshot.data().userHandle){
             await db.doc(`/notifications/${snapshot.id}`).set({
                 recipient: scream.data().userHandle,
                 sender: snapshot.data().userHandle,
@@ -102,5 +102,67 @@ exports.createNotificationOnComment = functions.firestore.document("comments/{id
     catch(err){
         console.error(err);
         return
+    }
+})
+
+// firebase trigger to change the image url on screams after the user image changes
+
+exports.onUserImageChange = functions.firestore.document("users/{userId}").onUpdate( async change => {
+    const beforeData = change.before.data();
+    const afterData  = change.after.data();
+
+    // only update the image url in case it changes
+
+    if(beforeData.imageUrl !== afterData.imageUrl){
+        const batch = db.batch();
+
+        // get the screams
+
+        const screams = await db.collection("screams").where("userHandle", "==", beforeData.handle).get();
+
+        screams.forEach(scream => {
+            batch.update(db.doc(`/screams/${scream.id}`), { imageUrl: afterData.imageUrl })
+        })
+
+        batch.commit();
+    }
+})
+
+// firebase trigger to delete comments, likes, and notifications for a scream on delete
+
+exports.onDeleteScream = functions.firestore.document("screams/{screamID}").onDelete( async (snapshot, context) => {
+    const screamID = context.params.screamID;
+    try {
+        const batch = db.batch();
+
+        // delete the comments associated to the scream
+
+        const comments = await db.collection("comments").where("screamID", "==", screamID).get();
+
+        comments.forEach(comment => {
+            batch.delete(db.doc(`/comments/${comment.id}`))
+        })
+
+        // delete the likes associated to the scream
+
+        const likes = await db.collection("likes").where("screamID", "==", screamID).get();
+
+        likes.forEach(like => {
+            batch.delete(db.doc(`/likes/${like.id}`))
+        })
+
+        // delete the notifications associated to the scream
+
+        const notifications = await db.collection("notifications").where("screamID", "==", screamID).get();
+
+        notifications.forEach(notification => {
+            batch.delete(db.doc(`/notifications/${notification.id}`))
+        })
+
+        // commit the changes
+
+        batch.commit();
+    } catch (error) {
+        console.error(error);
     }
 })
