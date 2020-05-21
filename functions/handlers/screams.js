@@ -10,7 +10,7 @@ exports.getScreams = async (req, res) => {
 
         screams.forEach(scream => {
             return data.push({
-                screamId: scream.id, 
+                screamID: scream.id, 
                 body: scream.data().body, 
                 userHandle: scream.data().userHandle, 
                 createdAt: scream.data().createdAt, 
