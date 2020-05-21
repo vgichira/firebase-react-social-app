@@ -105,8 +105,8 @@ exports.loginUser = async (req, res) => {
     catch(error){
         console.error(error);
 
-        if(error.code === "auth/wrong-password"){
-            return res.status(200).json({
+        if(error.code === "auth/wrong-password" || error.code === "auth/user-not-found"){
+            return res.status(500).json({
                 general:"Incorrect email or password."
             })
         }
