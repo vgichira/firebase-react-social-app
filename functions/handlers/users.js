@@ -31,8 +31,7 @@ exports.signupUser = async (req, res) => {
     .then(doc => {
         if(doc.exists){
             return res.status(400).json({
-                status: 400,
-                message:`Handle ${newUser.handle} is already taken`
+                handle:`Handle ${newUser.handle} is already taken`
             })
         } else{
             return firebase
@@ -69,12 +68,10 @@ exports.signupUser = async (req, res) => {
 
         if(error.code === "auth/email-already-in-use"){
             return res.status(400).json({
-                status: 400,
-                message:"Email address is already registered"
+                email:"Email address is already registered"
             })
         }else{
             return res.status(500).json({
-                status:500, 
                 general:"An error occurred while processing request." 
             })
         }
